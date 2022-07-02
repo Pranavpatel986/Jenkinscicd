@@ -1,0 +1,34 @@
+pipeline {
+    agent any
+    
+    tools{
+        maven 'maven_3_5_0'
+    }
+    stages{
+        stage('Built maven'){
+            steps{
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Pranavpatel986/Jenkinscicd']]])
+                bat 'mvn clean install'
+            }
+        }
+        stage('Build docker image'){
+            steps{
+                script{
+                    bat 'docker build -t pranavpatel986/devops-integrationt .'
+                }
+            }
+        }
+        stage('Push'){
+            steps{
+                bat 'docker login -u pranavpatel986 -p Ram@2531patel'
+                bat 'docker push pranavpatel986/devops-integration:latest'
+            }
+        }
+    }
+    post{
+        always{
+            bat 'docker logout'
+        }
+    }
+    
+}

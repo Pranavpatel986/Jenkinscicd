@@ -14,14 +14,14 @@ pipeline {
         stage('Build docker image'){
             steps{
                 script{
-                    bat 'docker build -t pranavpatel986/devops-integrationt .'
+                    bat 'docker build -t pranavpatel986/devops-integration:0.0.1 .'
                 }
             }
         }
         stage('Push'){
             steps{
                 bat 'docker login -u pranavpatel986 -p Ram@2531patel'
-                bat 'docker push pranavpatel986/devops-integration:latest'
+                bat 'docker push pranavpatel986/devops-integration:0.0.1'
             }
         }
     }

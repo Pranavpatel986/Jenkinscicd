@@ -13,7 +13,36 @@ pipeline {
    
     stages {
         
-         stage('Logging into AWS ECR') {
+         
+        
+        stage('Cloning Git') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/Pranavpatel986/Jenkinscicd.git']]])     
+            }
+        }
+        stage('Built maven'){
+            steps{
+                script{
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        
+        
+  
+    // Building Docker images
+    stage('Building image') {
+      steps{
+        script {
+          //dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+          //sh 'docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} jenkins-pipline-build'
+          sh 'docker build -t pranavpatel986/devops-integration .'
+          sh 'docker tag pranavpatel986/devops-integration ${IMAGE_REPO_NAME}:${IMAGE_TAG}'
+        }
+      }
+    }
+    
+    stage('Logging into AWS ECR') {
             steps {
                 script {
                 sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
@@ -21,25 +50,6 @@ pipeline {
                  
             }
         }
-        
-        stage('Cloning Git') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/Pranavpatel986/Jenkinscicd.git']]])
-                sh 'mvn clean install'     
-            }
-        }
-  
-    // Building Docker images
-    stage('Building image') {
-      steps{
-        script {
-          //dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
-          sh 'docker build -t pranavpatel986/devops-integration .'
-          //sh 'docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} jenkins-pipline-build'
-          sh 'docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} pranavpatel986/devops-integration'
-        }
-      }
-    }
    
     // Uploading Docker images into AWS ECR
     stage('Pushing to ECR') {

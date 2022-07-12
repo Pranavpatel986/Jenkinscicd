@@ -29,7 +29,6 @@ pipeline {
     stage('Building image') {
       steps{
         script {
-          sh "mvn clean build"
           dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
           sh "docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} jenkins-pipline-build"
         }
